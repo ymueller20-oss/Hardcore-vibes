@@ -1,0 +1,10 @@
+{
+  "name": "hardcore-vibes",
+  "version": "1.0.0",
+  "description": "KI-gestütztes Browser-Studio für Hardcore Techno",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npx --yes http-server -p 8080 -c-1 ."
+  }
+}

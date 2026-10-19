@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hardcore Vibes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%224%22 fill=%22%230c0a0e%22/%3E%3Cpath d=%22M6 24V8h4v6h6V8h4v16h-4v-6h-6v6z%22 fill=%22%23ffcf1a%22/%3E%3Crect x=%2222%22 y=%228%22 width=%224%22 height=%2216%22 fill=%22%23ff2a4f%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@700;900&family=Barlow+Semi+Condensed:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-name">HARDCORE<b>VIBES</b></span>
+      <span class="brand-sub">KI-Studio für Hardcore Techno</span>
+    </div>
+
+    <div class="transport">
+      <button id="btn-play" class="btn btn-play" title="Pattern abspielen (Leertaste)">▶ Pattern</button>
+      <button id="btn-song" class="btn" title="Ganzes Arrangement abspielen">▶ Song</button>
+      <button id="btn-stop" class="btn" title="Stopp">■</button>
+    </div>
+
+    <div class="globals">
+      <label class="field"><span>BPM</span><input id="bpm" type="number" min="100" max="320" step="1"></label>
+      <label class="field"><span>Tonart</span><select id="root"></select></label>
+      <label class="field"><span>Skala</span><select id="scale"></select></label>
+      <label class="field field-range"><span>Swing</span><input id="swing" type="range" min="0" max="0.5" step="0.01"></label>
+      <label class="field field-range"><span>Master</span><input id="master-vol" type="range" min="0" max="1" step="0.01"></label>
+    </div>
+
+    <canvas id="scope" width="300" height="60" aria-hidden="true"></canvas>
+
+    <div class="file-actions">
+      <button id="btn-undo" class="btn btn-small" title="Rückgängig (Strg+Z)">↶</button>
+      <button id="btn-redo" class="btn btn-small" title="Wiederholen (Strg+Shift+Z)">↷</button>
+      <select id="export-mode" class="btn-small" aria-label="Export-Umfang">
+        <option value="song">Song</option>
+        <option value="loop">Pattern-Loop</option>
+      </select>
+      <button id="btn-export" class="btn btn-small">WAV exportieren</button>
+      <button id="btn-save" class="btn btn-small">Speichern</button>
+      <label class="btn btn-small file-btn">Laden<input id="file-load" type="file" accept=".json,application/json" hidden></label>
+      <button id="btn-new" class="btn btn-small">Neu</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="panel ai" aria-labelledby="ai-title">
+    <div class="panel-head">
+      <h2 id="ai-title">KI-Studio</h2>
+      <p class="hint">Generiere alles per KI und feile danach von Hand weiter. Jede KI-Aktion lässt sich mit ↶ rückgängig machen.</p>
+    </div>
+    <div class="ai-grid">
+      <div class="ai-local">
+        <h3>Lokale KI <small>offline, kostenlos</small></h3>
+        <div class="row-fields">
+          <label class="field"><span>Stil</span><select id="ai-style"></select></label>
+          <label class="field field-range"><span>Härte <output id="ai-int-out"></output></span><input id="ai-intensity" type="range" min="0" max="1" step="0.01" value="0.75"></label>
+          <label class="field field-range"><span>Komplexität <output id="ai-cpx-out"></output></span><input id="ai-complexity" type="range" min="0" max="1" step="0.01" value="0.5"></label>
+        </div>
+        <div class="row-fields">
+          <label class="field"><span>Seed</span><input id="ai-seed" type="number" placeholder="zufällig"></label>
+          <label class="check"><input id="ai-seed-lock" type="checkbox"> Seed sperren</label>
+        </div>
+        <div class="btn-row">
+          <button id="ai-song" class="btn btn-hot">Kompletten Track generieren</button>
+          <button id="ai-pattern" class="btn">Aktuelles Pattern neu</button>
+          <button id="ai-vary" class="btn">Variation</button>
+          <label class="field field-range field-inline"><span>Stärke</span><input id="ai-vary-amt" type="range" min="0.1" max="1" step="0.05" value="0.4"></label>
+        </div>
+      </div>
+
+      <div class="ai-claude">
+        <h3>Claude <small>beschreib deinen Track in Worten</small></h3>
+        <textarea id="claude-prompt" rows="3" placeholder="z. B. Düsterer Frenchcore mit 200 BPM, epische Supersaw-Melodie im Break, Kick mit langem Tail und Vocals wie „NO MERCY“"></textarea>
+        <div class="row-fields">
+          <label class="field"><span>Umfang</span><select id="claude-scope"></select></label>
+          <label class="field"><span>Modell</span><select id="claude-model"></select></label>
+        </div>
+        <div class="row-fields">
+          <label class="field field-grow"><span>Anthropic API-Key</span><input id="claude-key" type="password" autocomplete="off" placeholder="sk-ant-…"></label>
+          <label class="check"><input id="claude-remember" type="checkbox"> merken</label>
+        </div>
+        <div class="btn-row">
+          <button id="claude-go" class="btn btn-hot">Mit Claude generieren</button>
+        </div>
+        <p id="claude-status" class="status" role="status"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="seq-title">
+    <div class="panel-head seq-head">
+      <h2 id="seq-title">Sequencer</h2>
+      <div class="patterns" id="pattern-bar"></div>
+      <div class="btn-row">
+        <select id="copy-target" aria-label="Pattern kopieren nach"></select>
+        <button id="btn-copy" class="btn btn-small">Kopieren</button>
+        <button id="btn-clear" class="btn btn-small">Leeren</button>
+      </div>
+    </div>
+    <p class="hint">Klick = Step an/aus (mit der Maus ziehen zum Malen). Rechtsklick / langes Drücken = Lautstärke (normal → Akzent → leise). Bass & Melodie: Tonhöhe im Piano-Roll darunter. Vocals: Klick wechselt Slot 1–4.</p>
+    <div class="grid-scroll">
+      <div id="grid" class="grid"></div>
+    </div>
+
+    <div class="roll-panel">
+      <div class="roll-toolbar">
+        <div class="seg" id="roll-track"></div>
+        <span class="tb-label">Notenlänge</span>
+        <div class="seg" id="roll-len"></div>
+        <button class="btn btn-small" data-roll="oct-down">Okt −</button>
+        <button class="btn btn-small" data-roll="oct-up">Okt +</button>
+        <button class="btn btn-small" data-roll="down">Stufe −</button>
+        <button class="btn btn-small" data-roll="up">Stufe +</button>
+        <button class="btn btn-small" data-roll="ai">KI-Linie</button>
+        <button class="btn btn-small" data-roll="clear">Leeren</button>
+      </div>
+      <p class="hint">Klick setzt/entfernt eine Note, Klick in eine andere Zeile ändert die Tonhöhe, Shift+Klick verlängert die vorherige Note bis hierher.</p>
+      <div class="grid-scroll">
+        <div id="roll" class="roll"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="arr-title">
+    <div class="panel-head">
+      <h2 id="arr-title">Arrangement</h2>
+      <p class="hint">Jeder Block = 2 Takte. Klick wechselt das Pattern (A→B→C→D), Rechtsklick löscht den Block.</p>
+    </div>
+    <div class="arrangement" id="arrangement"></div>
+  </section>
+
+  <div class="two-col">
+    <section class="panel" aria-labelledby="snd-title">
+      <div class="panel-head">
+        <h2 id="snd-title">Sound-Design &amp; Mixer</h2>
+      </div>
+      <div class="tabs" id="sound-tabs" role="tablist"></div>
+      <div id="sound-body" class="sound-body"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="voc-title">
+      <div class="panel-head">
+        <h2 id="voc-title">Vocals</h2>
+        <button id="voc-ai" class="btn btn-small">KI-Texte</button>
+      </div>
+      <p class="hint">Text eintippen und als Robo-Stimme rendern, selbst ins Mikro shouten oder ein Sample laden. Im Sequencer die Slots 1–4 auf Steps legen.</p>
+      <div id="vocal-slots" class="vocal-slots"></div>
+    </section>
+  </div>
+</main>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
